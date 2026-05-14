@@ -2,3 +2,5 @@
 .claude/
 # Specify  
 .specify/**
+# Documentation
+*.pdf
