@@ -100,6 +100,82 @@ respond on a specific vehicle.
 
 ---
 
+## 2a. DBC Broadcast Signal Cross-Reference
+
+**Source**: `~/Development/opendbc/opendbc/dbc/toyota_2017_ref_pt.dbc`
+
+The commaai/opendbc Toyota 2017 reference powertrain DBC covers **broadcast** frames —
+signals transmitted continuously without a request. These are complementary to the
+Mode 22 PIDs in §2 above, which require the gauge to poll.
+
+### Broadcast ATF Temperature Candidate: BV_THOCL
+
+| Field | Value |
+|---|---|
+| Frame | `ECT1S92` — ID **0x3BC** (956 dec), 8 bytes |
+| Signal | `BV_THOCL` — bits 23\|16, big-endian, unsigned |
+| Scale / Offset | 0.625 / −50 |
+| Formula | `temp_C = raw_16bit × 0.625 − 50` |
+| Range | −50 °C (raw 0) → ~150 °C (raw 320) |
+| Context | ECT (Electronic Controlled Transmission) frame; co-located with `B_OILW` (oil warning flag), `B_GEAR`, gear-position bits |
+
+"THOCL" is not standard in public Toyota documentation. The ECT frame context and
+temperature-plausible formula strongly suggest ATF temperature. **Must be verified
+in Phase 1**:
+
+- Capture frame 0x3BC during a cold-start warm-up
+- Observe whether `BV_THOCL` tracks the expected ATF warm-up curve (slow rise from
+  cold soak, faster rise under tow load)
+- Cross-reference simultaneously against Mode 22 PID 0x1627 response
+
+**If verified broadcast**: This is preferable to OBD-II polling — no request frames
+needed, reduces CAN bus load, eliminates request/response timing dependency.
+
+### Broadcast Coolant Temperature: GATHW
+
+| Field | Value |
+|---|---|
+| Frame | `ENG1S23` — ID **0x3C1** (961 dec), 3 bytes |
+| Signal | `GATHW` — bits 15\|16, big-endian, signed |
+| Scale / Offset | 0.625 / 0 |
+| Formula | `temp_C = signed_16bit × 0.625` |
+| Context | "THW" = Thermistor Hot Water — Toyota's standard label for coolant temperature |
+
+**Use**: Primary contingency for Slot 1 if engine oil temperature (OQ-1) cannot be
+accessed. Coolant temp is confirmed present in the DBC and is a well-understood proxy
+for engine thermal state under tow load.
+
+### No Broadcast Engine Oil Temperature
+
+The DBC contains only status flags: `B_OILPL` (ENG1S92, 0x3BB, 2-bit) and `B_OILW`
+(ECT1S92, 0x3BC, 1-bit). Neither is a continuous temperature value. No broadcast
+frame carrying a continuous engine oil temperature was found — consistent with
+community reports that the 3rd gen V6 uses a pressure switch rather than a temperature
+sensor in the oil circuit. OQ-1 remains unresolved until Phase 1 Mode 22 scan.
+
+### How to Load the DBC (local)
+
+```python
+import cantools
+
+db = cantools.database.load_file(
+    '/Users/<you>/Development/opendbc/opendbc/dbc/toyota_2017_ref_pt.dbc'
+)
+
+# Inspect the ATF temp frame
+msg = db.get_message_by_name('ECT1S92')
+print(f"ID: 0x{msg.frame_id:03X}")
+for s in msg.signals:
+    print(f"  {s.name}: scale={s.scale} offset={s.offset} bits={s.start}|{s.length}")
+
+# Decode a captured raw frame (8 bytes)
+raw = bytes([0x00, 0x00, 0x00, 0xF0, 0x00, 0x00, 0x00, 0x00])
+decoded = msg.decode(raw)
+print(decoded)  # BV_THOCL → 0xF0 = 240 → 240*0.625-50 = 100 °C
+```
+
+---
+
 ## 3. Tacoma CAN PIDs — Engine Oil Temperature
 
 **Decision**: UNRESOLVED — requires in-vehicle verification as the first task of Phase 1.

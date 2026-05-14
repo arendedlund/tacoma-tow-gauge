@@ -58,7 +58,7 @@ MIPI DSI display via CM4 DSI connector; CAN via SPI MCP2515 + TJA1050 transceive
 |---|---|---|
 | I. Simplicity & YAGNI | Does this design include anything not needed for the current phase? | ✅ Phased approach; Phase 2 demo intentionally minimal |
 | II. Sensor Modularity | Can a new signal be added without touching existing signal code? | ✅ `config/signals.json` + decoder plugin; no code change for new signals |
-| III. Display-Constraints First | Does every layout decision respect 280×1424 portrait? | ✅ Three equal horizontal slots; no element wider than 280 px |
+| III. Display-Constraints First | Does every layout decision respect 1424×280 landscape? | ✅ Three equal vertical band slots (~474×280 px each); layout fits within clamshell constraints |
 | IV. Data Integrity & Safe Fallback | Is every invalid/stale state surfaced visually? | ✅ Six distinct states including NO_SIGNAL, FAULT, WAITING; read-only rootfs |
 | V. Extensibility Without Regression | Can Phase 3/4 changes be made without breaking Phase 2 signal logic? | ✅ CAN source abstracted behind python-can Bus; Phase 3 is a config swap |
 
@@ -119,6 +119,20 @@ Phase 2 (Demo)         → Gates Phase 3 (validates display pipeline before CAN 
 Phase 3 (Direct CAN)   → Gates Phase 4 (proves standalone operation before enclosure)
 Phase 4 (Install)      → Final deliverable
 ```
+
+## Phase 1 Resources
+
+Before the panda arrives, these resources accelerate CAN signal research:
+
+| Resource | Location | Use |
+|---|---|---|
+| commaai/opendbc Toyota DBC | `opendbc/opendbc/car/toyota/toyota_nodsu_pt_generated.dbc` | Identify broadcast frame IDs for signals that don't need OBD-II requests; cross-reference Cabana captures |
+| Cabana (commaai) | Open source; install from GitHub | Log and visually decode CAN frames captured via panda |
+| Toyota TIS ($15/48h) | techinfo.toyota.com | Wiring diagrams for Phase 3 CAN tap point (buy when starting Phase 3 planning) |
+
+**opendbc note**: The DBC covers broadcast powertrain frames only. Enhanced Mode 22 PIDs
+(0x1627 ATF pan, 0x1628 TC outlet) are request/response pairs not present in the DBC.
+Verify those with a live panda query during Phase 1.
 
 ## Open Questions (from research.md)
 

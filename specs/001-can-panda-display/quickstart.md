@@ -2,9 +2,100 @@
 
 **Branch**: `001-can-panda-display` | **Date**: 2026-05-14
 
-This guide gets Phase 2 (demo bench rig) running: CM4 + panda USB → live temperature
+This guide gets Phase 2 (demo bench rig) running: CM5 + panda USB → live temperature
 display. Phase 3+ (direct CAN tap) replaces the panda with MCP2515; the application
 code is unchanged.
+
+---
+
+## Local Development (No Hardware)
+
+Develop and test the signal decoder, state machine, and display rendering on macOS
+before any hardware arrives. No panda, CM5, or MIPI display required.
+
+### Virtual CAN Bus
+
+`python-can` ships a built-in `virtual` interface: an in-memory channel that lets
+multiple processes exchange CAN frames on the same machine.
+
+```bash
+pip install python-can cantools
+```
+
+**Inject synthetic frames** (save as `tools/inject_virtual_can.py`):
+
+```python
+import can, time
+
+bus = can.interface.Bus(channel='test', interface='virtual')
+
+while True:
+    # Simulate a Mode 22 response for PID 0x1627 (ATF pan temp ≈ 95 °C / 203 °F)
+    # Formula: (A*459/255) + (B*1.6/255) - 40 °F → °C; A=120, B=0 gives ~95 °C
+    data = bytes([0x05, 0x62, 0x16, 0x27, 120, 0, 0, 0])
+    bus.send(can.Message(arbitration_id=0x7E9, data=data, is_extended_id=False))
+    time.sleep(1)
+```
+
+In the gauge app, open the same channel:
+
+```python
+bus = can.interface.Bus(channel='test', interface='virtual')
+```
+
+Both processes share the channel by name — the injector drives the reader.
+
+### pygame Windowed Mode (macOS)
+
+The display renderer runs in a desktop window instead of writing to `/dev/fb0`.
+Detect the absence of framebuffer hardware and call
+`pygame.display.set_mode((1424, 280))` instead of initializing the framebuffer driver.
+Pass `--windowed` to opt in explicitly:
+
+```bash
+python3 src/main.py --config config/ --windowed
+```
+
+This renders the full 1424×280 landscape layout in a macOS window — no MIPI hardware
+needed to validate slot layout, color states, or font sizing.
+
+### Toyota DBC Signal Exploration
+
+The Toyota 2017 reference powertrain DBC is at
+`~/Development/opendbc/opendbc/dbc/toyota_2017_ref_pt.dbc`.
+
+Key signals already identified (see `research.md §2a` for full detail):
+
+| Frame | ID | Signal | Formula | Likely meaning |
+|---|---|---|---|---|
+| ECT1S92 | 0x3BC | BV_THOCL | `raw × 0.625 − 50` °C | ATF temperature (broadcast candidate) |
+| ENG1S23 | 0x3C1 | GATHW | `signed_raw × 0.625` °C | Engine coolant temperature |
+| ECT1S92 | 0x3BC | B_OILW | 1-bit flag | Transmission oil warning |
+| ECT1S92 | 0x3BC | B_GEAR | 4-bit | Current gear |
+
+Load and inspect the DBC with cantools:
+
+```python
+import cantools
+
+db = cantools.database.load_file(
+    '/Users/<you>/Development/opendbc/opendbc/dbc/toyota_2017_ref_pt.dbc'
+)
+
+# Inspect the ATF temp frame
+msg = db.get_message_by_name('ECT1S92')
+for s in msg.signals:
+    print(f"  {s.name}: bits={s.start}|{s.length} scale={s.scale} offset={s.offset}")
+
+# Simulate decoding a raw captured frame
+# BV_THOCL raw=240 → 240*0.625-50 = 100 °C (normal ATF operating temp)
+decoded = msg.decode(bytes([0x00, 0x00, 0x00, 0xF0, 0x00, 0x00, 0x00, 0x00]))
+print(decoded)
+```
+
+Note: Mode 22 PIDs (0x1627 ATF pan, 0x1628 TC outlet) are request/response pairs and
+are **not** in the DBC — they must be verified with the panda in Phase 1. The DBC
+only covers continuously broadcast frames.
 
 ---
 
