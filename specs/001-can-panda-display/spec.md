@@ -62,7 +62,13 @@ during a warmup cycle — with no vehicle modifications made.
    5 seconds of the first valid CAN frame.
 2. **Given** the display is running, **When** any temperature value changes, **Then** the
    corresponding slot updates within 2 seconds and the other slots are unaffected.
-3. **Given** the panda is disconnected mid-session, **When** the timeout elapses, **Then**
+3. **Given** a temperature rises into the high end of its normal operating range, **When**
+   the display updates, **Then** that slot changes to a warning color while slots for
+   values still in normal range remain unchanged.
+4. **Given** a temperature exceeds its normal operating range, **When** the display
+   updates, **Then** that slot changes to a critical color distinct from both the normal
+   and warning states.
+5. **Given** the panda is disconnected mid-session, **When** the timeout elapses, **Then**
    all three slots show a "no signal" indicator with no stale values remaining.
 
 ---
@@ -157,6 +163,13 @@ function is affected. The OBD-II port is unobstructed.
   that has not received a valid reading within a configurable timeout.
 - **FR-008**: The system MUST reject and not display values that fall outside a physically
   plausible range for each signal.
+- **FR-013**: Each display slot MUST render in a normal color when its temperature is
+  within the defined normal operating range for that signal.
+- **FR-014**: Each display slot MUST render in a warning color when its temperature is
+  in the upper portion of the normal operating range, indicating elevated but not yet
+  critical thermal load.
+- **FR-015**: Each display slot MUST render in a critical color, distinct from both normal
+  and warning states, when its temperature exceeds the normal operating range.
 - **FR-009**: The CAN tap MUST NOT use the OBD-II port — that port MUST remain free for
   diagnostic tools in the finished installation.
 - **FR-010**: The device MUST power on automatically when the WSH key-on circuit
@@ -173,7 +186,11 @@ function is affected. The OBD-II port is unobstructed.
 - **Gauge Signal**: A named value (e.g., "Oil Temp") derived from CAN frame fields; has a
   unit, plausible range, decoding formula, and staleness timeout.
 - **Display Slot**: A region of the physical screen allocated to one Gauge Signal; renders
-  the current value or a fault state.
+  the current value or a fault state in a color reflecting the signal's thermal state.
+- **Temperature Threshold**: A pair of boundary values defined per Gauge Signal — a
+  warning threshold (upper limit of normal operating range) and a critical threshold
+  (beyond which the temperature is considered dangerous). Thresholds are confirmed during
+  planning research and must be configurable without a firmware rebuild.
 - **CAN Tap**: The physical point on the vehicle wiring harness where the MCU connects
   to the CAN bus without using the OBD-II port.
 
@@ -193,7 +210,11 @@ function is affected. The OBD-II port is unobstructed.
   the OBD-II port operates normally.
 - **SC-006**: The display powers on within 10 seconds of key-on and shuts down cleanly
   at key-off, with no manual steps required.
-- **SC-007**: Adding a fourth gauge type requires no changes to existing temperature
+- **SC-007**: When a temperature crosses into the warning range, the display slot changes
+  color within the same refresh cycle as the value update — no separate delay.
+- **SC-008**: The three thermal states (normal, warning, critical) are visually
+  unambiguous from the driver's seated position without needing to read the numeric value.
+- **SC-009**: Adding a fourth gauge type requires no changes to existing temperature
   display code paths (verified by code review).
 
 ## Assumptions
@@ -214,6 +235,12 @@ function is affected. The OBD-II port is unobstructed.
   connected via MIPI.
 - Power is supplied from the WSH (windshield washer) key-on accessory circuit, 25A fused;
   device draw is expected to be well under 1A.
+- Normal operating temperature ranges and warning/critical thresholds for each signal will
+  be confirmed during planning research; typical baselines are oil temp ~80–130°C normal,
+  ATF pan ~70–100°C normal, torque converter slightly higher — exact values must be
+  validated against Toyota service data and owner/forum experience.
+- Thresholds must be adjustable without rebuilding firmware; the configuration mechanism
+  is TBD during planning.
 - Temperature values will be displayed in Celsius; a unit toggle is out of scope for v1.
 - The 3D-printed clamshell design and MCU mounting location are out of scope for the
   software specification; they are mechanical deliverables of Phase 4.
