@@ -33,6 +33,16 @@ def main() -> None:
         default="test",
         help="python-can channel name for virtual bus (default: test)",
     )
+    parser.add_argument(
+        "--scale",
+        type=float,
+        default=1.0,
+        help=(
+            "Window scale factor for windowed mode (default: 1.0). "
+            "Use ~0.5 on a 2× Retina Mac to approximate the physical "
+            "7-inch Microtips display size."
+        ),
+    )
     args = parser.parse_args()
 
     from src.can.reader import CANReader
@@ -49,7 +59,7 @@ def main() -> None:
         channel=args.channel,
     )
 
-    renderer = Renderer(signals=signals, windowed=args.windowed)
+    renderer = Renderer(signals=signals, windowed=args.windowed, scale=args.scale)
     renderer.setup()
 
     reader.start()
