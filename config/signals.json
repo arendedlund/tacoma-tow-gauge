@@ -1,0 +1,63 @@
+[
+  {
+    "name": "oil_temp",
+    "label": "OIL TEMP",
+    "unit": "°C",
+    "status": "pending-OQ-1",
+    "request_header": "0x7E0",
+    "response_header": "0x7E8",
+    "obd_mode": "0x22",
+    "obd_pid": "0x0000",
+    "decode": {
+      "formula": "0",
+      "variables": {}
+    },
+    "plausible_min": -40.0,
+    "plausible_max": 200.0,
+    "warning_threshold": 135.0,
+    "critical_threshold": 150.0,
+    "staleness_timeout_s": 10.0
+  },
+  {
+    "name": "atf_pan_temp",
+    "label": "ATF PAN",
+    "unit": "°C",
+    "request_header": "0x7E1",
+    "response_header": "0x7E9",
+    "obd_mode": "0x22",
+    "obd_pid": "0x1627",
+    "decode": {
+      "formula": "((A * 459/255) + (B * 1.6/255) - 40 - 32) * 5/9",
+      "variables": {
+        "A": { "byte_index": 3, "byte_count": 1 },
+        "B": { "byte_index": 4, "byte_count": 1 }
+      }
+    },
+    "plausible_min": -40.0,
+    "plausible_max": 200.0,
+    "warning_threshold": 130.0,
+    "critical_threshold": 150.0,
+    "staleness_timeout_s": 10.0
+  },
+  {
+    "name": "tc_outlet_temp",
+    "label": "TC OUTLET",
+    "unit": "°C",
+    "request_header": "0x7E1",
+    "response_header": "0x7E9",
+    "obd_mode": "0x22",
+    "obd_pid": "0x1628",
+    "decode": {
+      "formula": "((A * 459/255) + (B * 1.6/255) - 40 - 32) * 5/9",
+      "variables": {
+        "A": { "byte_index": 3, "byte_count": 1 },
+        "B": { "byte_index": 4, "byte_count": 1 }
+      }
+    },
+    "plausible_min": -40.0,
+    "plausible_max": 200.0,
+    "warning_threshold": 140.0,
+    "critical_threshold": 160.0,
+    "staleness_timeout_s": 10.0
+  }
+]

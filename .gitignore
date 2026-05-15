@@ -1,6 +1,15 @@
 # Claude Code
 .claude/
-# Specify  
+# Specify
 .specify/**
 # Documentation
 *.pdf
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+venv/
+dist/
+*.egg-info/
+.eggs/

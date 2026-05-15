@@ -20,9 +20,9 @@
 
 **Purpose**: Create project skeleton so all subsequent tasks have a landing place.
 
-- [ ] T001 Create project directory structure: `src/can/`, `src/signals/`, `src/display/`, `src/config/`, `config/`, `systemd/`, `tools/`
-- [ ] T002 [P] Create `requirements.txt` with `python-can`, `pygame`, `pillow`, `cantools` pinned to current stable versions
-- [ ] T003 [P] Create `src/can/__init__.py`, `src/signals/__init__.py`, `src/display/__init__.py` (empty package markers)
+- [X] T001 Create project directory structure: `src/can/`, `src/signals/`, `src/display/`, `src/config/`, `config/`, `systemd/`, `tools/`
+- [X] T002 [P] Create `requirements.txt` with `python-can`, `pygame`, `pillow`, `cantools` pinned to current stable versions
+- [X] T003 [P] Create `src/can/__init__.py`, `src/signals/__init__.py`, `src/display/__init__.py` (empty package markers)
 
 **Checkpoint**: `python3 -c "import can, pygame, cantools"` succeeds in venv
 
@@ -34,12 +34,12 @@
 
 **⚠ CRITICAL**: No user story work can begin until this phase is complete.
 
-- [ ] T004 Implement `SignalState` enum (`WAITING`, `NORMAL`, `WARNING`, `CRITICAL`, `NO_SIGNAL`, `FAULT`) in `src/signals/decoder.py`
-- [ ] T005 Implement `GaugeSignal` dataclass with `on_receive_frame(decoded_value)` and `on_tick()` state transition logic in `src/signals/decoder.py` (see data-model.md §GaugeSignal)
-- [ ] T006 [P] Implement `src/config/loader.py` — reads `config/signals.json` and `config/thresholds.json`, instantiates `GaugeSignal` objects with thresholds; raises on missing required fields
-- [ ] T007 [P] Create `config/signals.json` with ATF pan (PID 0x1627) and TC outlet (PID 0x1628) entries per signal-contract.md; add oil temp placeholder entry with `"status": "pending-OQ-1"`
-- [ ] T008 [P] Create `config/thresholds.json` with default thresholds per research.md §5: ATF pan warn 130°C/crit 150°C; TC outlet warn 140°C/crit 160°C; oil temp warn 135°C/crit 150°C; all staleness 10s
-- [ ] T009 Implement `SignalDecoder` decode functions for ATF pan and TC outlet in `src/signals/decoder.py`: formula `((A*459/255) + (B*1.6/255) - 40 - 32) * 5/9`; bytes from response payload positions 3 and 4
+- [X] T004 Implement `SignalState` enum (`WAITING`, `NORMAL`, `WARNING`, `CRITICAL`, `NO_SIGNAL`, `FAULT`) in `src/signals/decoder.py`
+- [X] T005 Implement `GaugeSignal` dataclass with `on_receive_frame(decoded_value)` and `on_tick()` state transition logic in `src/signals/decoder.py` (see data-model.md §GaugeSignal)
+- [X] T006 [P] Implement `src/config/loader.py` — reads `config/signals.json` and `config/thresholds.json`, instantiates `GaugeSignal` objects with thresholds; raises on missing required fields
+- [X] T007 [P] Create `config/signals.json` with ATF pan (PID 0x1627) and TC outlet (PID 0x1628) entries per signal-contract.md; add oil temp placeholder entry with `"status": "pending-OQ-1"`
+- [X] T008 [P] Create `config/thresholds.json` with default thresholds per research.md §5: ATF pan warn 130°C/crit 150°C; TC outlet warn 140°C/crit 160°C; oil temp warn 135°C/crit 150°C; all staleness 10s
+- [X] T009 Implement `SignalDecoder` decode functions for ATF pan and TC outlet in `src/signals/decoder.py`: formula `((A*459/255) + (B*1.6/255) - 40 - 32) * 5/9`; bytes from response payload positions 3 and 4
 
 **Checkpoint**: `python3 -c "from src.config.loader import load_signals; sigs = load_signals('config/'); print(sigs)"` prints three GaugeSignal objects in WAITING state
 
@@ -55,9 +55,9 @@
 
 ### Implementation
 
-- [ ] T010 [P] [US1] Create `tools/capture_verify.py` — sends Mode 22 requests for PIDs 0x1627 and 0x1628 to header 0x7E1 via panda USB; prints decoded ATF pan and TC outlet °C values in real time to stdout
-- [ ] T011 [P] [US1] Create `tools/monitor_broadcast.py` — passive listener for broadcast frames 0x3BC (`BV_THOCL`) and 0x3C1 (`GATHW`) using cantools + local DBC (`~/Development/opendbc/opendbc/dbc/toyota_2017_ref_pt.dbc`); prints decoded values alongside timestamp
-- [ ] T012 [P] [US1] Create `tools/dbc_inspect.py` — CLI utility: given a frame ID, loads the Toyota DBC and prints all signals with bit positions, scale, offset, and a sample decode; used for ad-hoc exploration during capture session
+- [X] T010 [P] [US1] Create `tools/capture_verify.py` — sends Mode 22 requests for PIDs 0x1627 and 0x1628 to header 0x7E1 via panda USB; prints decoded ATF pan and TC outlet °C values in real time to stdout
+- [X] T011 [P] [US1] Create `tools/monitor_broadcast.py` — passive listener for broadcast frames 0x3BC (`BV_THOCL`) and 0x3C1 (`GATHW`) using cantools + local DBC (`~/Development/opendbc/opendbc/dbc/toyota_2017_ref_pt.dbc`); prints decoded values alongside timestamp
+- [X] T012 [P] [US1] Create `tools/dbc_inspect.py` — CLI utility: given a frame ID, loads the Toyota DBC and prints all signals with bit positions, scale, offset, and a sample decode; used for ad-hoc exploration during capture session
 - [ ] T013 [HW: panda + vehicle] [US1] Run `tools/capture_verify.py` and `tools/monitor_broadcast.py` simultaneously in the vehicle; record which signals respond, their raw byte positions, and cross-check decoded values against a known reference thermometer during warmup
 - [ ] T014 [US1] Update `config/signals.json` with Phase 1 verified signal definitions: confirm or correct ATF and TC outlet byte positions; resolve oil temp slot (populate if accessible, or substitute `GATHW` coolant temp from 0x3C1); remove `pending-OQ-1` placeholder
 - [ ] T015 [US1] If `BV_THOCL` broadcast is verified in T013, update `contracts/signal-contract.md` to add optional `broadcast_frame_id` field for passively-received signals; update `config/signals.json` schema note accordingly
@@ -76,11 +76,11 @@
 
 ### Software (no hardware required)
 
-- [ ] T016 [P] [US2] Implement `src/can/reader.py` — background thread; opens `can.Bus` (interface configurable: `panda` or `virtual`); filters frames by `arbitration_id`; calls registered `SignalDecoder.decode` and updates corresponding `GaugeSignal` under a threading lock
-- [ ] T017 [P] [US2] Implement `src/display/slot.py` — `DisplaySlot` dataclass with `Rect` position, label string, and `render(surface, gauge_signal)` method; maps `SignalState` → pygame color per display-contract.md color table
-- [ ] T018 [P] [US2] Create `tools/inject_virtual_can.py` — injects synthetic Mode 22 response frames for all three signals on `python-can` virtual bus `channel='test'`; supports CLI args for temperature value overrides to exercise NORMAL/WARNING/CRITICAL state transitions
-- [ ] T019 [US2] Implement `src/display/renderer.py` — pygame init; `display.set_mode((1424, 280))`; three-slot layout per display-contract.md (x=0/475/950, each ~474×280); render loop at 30fps reading `GaugeSignal` state each frame; supports `--windowed` flag (macOS) and `/dev/fb0` framebuffer (CM5)
-- [ ] T020 [US2] Implement `src/main.py` — argument parsing (`--config`, `--windowed`, `--bus-interface`); instantiates config, signals, CAN reader thread, and renderer; wires graceful shutdown on SIGTERM and keyboard interrupt
+- [X] T016 [P] [US2] Implement `src/can/reader.py` — background thread; opens `can.Bus` (interface configurable: `panda` or `virtual`); filters frames by `arbitration_id`; calls registered `SignalDecoder.decode` and updates corresponding `GaugeSignal` under a threading lock
+- [X] T017 [P] [US2] Implement `src/display/slot.py` — `DisplaySlot` dataclass with `Rect` position, label string, and `render(surface, gauge_signal)` method; maps `SignalState` → pygame color per display-contract.md color table
+- [X] T018 [P] [US2] Create `tools/inject_virtual_can.py` — injects synthetic Mode 22 response frames for all three signals on `python-can` virtual bus `channel='test'`; supports CLI args for temperature value overrides to exercise NORMAL/WARNING/CRITICAL state transitions
+- [X] T019 [US2] Implement `src/display/renderer.py` — pygame init; `display.set_mode((1424, 280))`; three-slot layout per display-contract.md (x=0/475/950, each ~474×280); render loop at 30fps reading `GaugeSignal` state each frame; supports `--windowed` flag (macOS) and `/dev/fb0` framebuffer (CM5)
+- [X] T020 [US2] Implement `src/main.py` — argument parsing (`--config`, `--windowed`, `--bus-interface`); instantiates config, signals, CAN reader thread, and renderer; wires graceful shutdown on SIGTERM and keyboard interrupt
 - [ ] T021 [US2] Local integration validation — run `python3 src/main.py --config config/ --windowed --bus-interface virtual` with `tools/inject_virtual_can.py` running; confirm all three slots render, update, and cycle through WAITING → NORMAL → WARNING → CRITICAL → NO_SIGNAL states
 
 ### Hardware bringup
@@ -103,7 +103,7 @@
 
 ### Software (no hardware required)
 
-- [ ] T025 [P] [US3] Update `src/can/reader.py` to support SocketCAN interface alongside panda: detect `--bus-interface socketcan` and open `can.interface.Bus('can0', interface='socketcan')`; no changes to decoder or display code
+- [X] T025 [P] [US3] Update `src/can/reader.py` to support SocketCAN interface alongside panda: detect `--bus-interface socketcan` and open `can.interface.Bus('can0', interface='socketcan')`; no changes to decoder or display code
 - [ ] T026 [P] [US3] Update `config/signals.json` to support broadcast frame mode if BV_THOCL was verified in US1 — add `source: "broadcast"` field and `frame_id` in place of `request_header`/`obd_mode`/`obd_pid`; update `src/can/reader.py` to handle passive-listen signals (no request sent)
 
 ### Hardware bringup
@@ -127,8 +127,8 @@
 
 ### Software (no hardware required)
 
-- [ ] T031 [P] [US4] Create `systemd/gauge.service` — `Type=simple`; `After=multi-user.target`; `Environment=SDL_FBDEV=/dev/fb0`; `ExecStart=/opt/gauge-env/bin/python3 /opt/gauge/src/main.py --config /opt/gauge/config`; `Restart=on-failure`
-- [ ] T032 [P] [US4] Create `tools/setup_readonly_fs.sh` — configures overlayFS read-only root on Raspberry Pi OS; adds small RW partition mount for `/opt/gauge/config`; documents revert procedure
+- [X] T031 [P] [US4] Create `systemd/gauge.service` — `Type=simple`; `After=multi-user.target`; `Environment=SDL_FBDEV=/dev/fb0`; `ExecStart=/opt/gauge-env/bin/python3 /opt/gauge/src/main.py --config /opt/gauge/config`; `Restart=on-failure`
+- [X] T032 [P] [US4] Create `tools/setup_readonly_fs.sh` — configures overlayFS read-only root on Raspberry Pi OS; adds small RW partition mount for `/opt/gauge/config`; documents revert procedure
 
 ### Hardware bringup
 

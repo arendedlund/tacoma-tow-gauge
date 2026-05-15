@@ -1,0 +1,18 @@
+[Unit]
+Description=Tacoma Tow Gauge Display
+After=multi-user.target
+
+[Service]
+Type=simple
+User=root
+WorkingDirectory=/opt/gauge
+Environment=SDL_FBDEV=/dev/fb0
+Environment=SDL_VIDEODRIVER=fbcon
+ExecStart=/opt/gauge-env/bin/python3 /opt/gauge/src/main.py \
+    --config /opt/gauge/config \
+    --bus-interface socketcan
+Restart=on-failure
+RestartSec=3
+
+[Install]
+WantedBy=multi-user.target
