@@ -59,7 +59,7 @@ wiring, no loose hardware, automatic power-on with the key.
 See [bom.md](bom.md) for the full phase-by-phase BOM with part sources, cost
 estimates, and purchase schedule.
 
-**Total estimate**: ~$331–381 (excludes panda, already purchased)
+**Total estimate**: ~$357–407 (excludes panda, already purchased)
 
 ## Architecture
 

@@ -54,13 +54,23 @@ pricing and stock. This is needed for Phase 2 display bring-up.
 | 4 | Raspberry Pi CM5 (1GB or 2GB) | 1 | ~$45–65 | ~$55 | CanaKit | 1GB sufficient for this project |
 | 5 | CM5 IO Board | 1 | ~$40 | ~$40 | CanaKit (bundle) | Often sold as kit with CM5 |
 | 6 | Microtips AWL-2801424T70N01 display | 1 | TBD | TBD | Microtips directly | Contact before ordering CM5 |
-| 7 | MIPI DSI ribbon cable (15-pin FPC, ~50–160mm) | 1–2 | ~$5 | ~$10 | Amazon | Check pitch and length vs CM5 IO Board DSI port |
-| 8 | MicroSD card 32GB+ (A2 rated) | 1 | ~$12 | ~$12 | Amazon | For OS |
-| 9 | USB-C power supply 5V/3A+ | 1 | ~$15 | ~$15 | Amazon | Bench power for CM5 |
-| 10 | USB-A to USB-C cable (for panda) | 1 | ~$8 | ~$8 | Amazon | panda → CM5 USB host |
-| 11 | Dupont jumper wires (M-F, 20cm) | 1 pack | ~$8 | ~$8 | Amazon | Bench wiring |
-| 12 | Mini-HDMI to HDMI cable | 1 | ~$8 | ~$8 | Amazon | CM5 IO board setup/debugging |
-| **Phase 2 subtotal** | | | | **~$161–181** | | |
+| 7 | 22-pin 0.5mm FPC breakout board (CM5 IO Board DSI port) | 1 | ~$8 | ~$8 | Amazon/Adafruit | Breaks out the CM5 IO Board's 22-pin DSI connector to individual pins for wiring |
+| 8 | 30-pin 0.5mm FPC breakout board (display side) | 1 | ~$8 | ~$8 | Amazon/Adafruit | Breaks out the AWL-2801424T70N01's 30-pin connector to individual pins |
+| 9 | 30-pin 0.5mm FPC extension cable (100–150mm) | 1 | ~$5 | ~$5 | Amazon | Connects display to breakout board; measure routing path before ordering length |
+| 10 | MT3608 boost converter module (5V → 12V) | 1 | ~$5 | ~$5 | Amazon | Steps up CM5 5V rail to 12V for display backlight (8 LEDs, 40mA, Vf 12V typ) |
+| 11 | MicroSD card 32GB+ (A2 rated) | 1 | ~$12 | ~$12 | Amazon | For OS |
+| 12 | USB-C power supply 5V/3A+ | 1 | ~$15 | ~$15 | Amazon | Bench power for CM5 |
+| 13 | USB-A to USB-C cable (for panda) | 1 | ~$8 | ~$8 | Amazon | panda → CM5 USB host |
+| 14 | Dupont jumper wires (M-F, 20cm) | 1 pack | ~$8 | ~$8 | Amazon | Bench wiring between breakout boards |
+| 15 | Mini-HDMI to HDMI cable | 1 | ~$8 | ~$8 | Amazon | CM5 IO board setup/debugging |
+| **Phase 2 subtotal** | | | | **~$187–207** | | |
+
+> **Connector note**: The AWL-2801424T70N01 uses a 30-pin 0.5mm FPC connector; the CM5 IO
+> Board DSI port is a 22-pin 0.5mm FPC connector. These are not compatible and cannot be
+> bridged with a single off-the-shelf cable. The two breakout boards above expose both
+> connectors as individual pins so the MIPI DSI signal lines, power, and backlight can be
+> wired point-to-point. The ST7701S init sequence (OQ-5) must be confirmed before wiring
+> to ensure the lane count and signal assignments are correct.
 
 ---
 
@@ -98,10 +108,10 @@ pricing and stock. This is needed for Phase 2 display bring-up.
 | Phase | Subtotal |
 |---|---|
 | Phase 1 | $0 (panda already ordered) |
-| Phase 2 | ~$161–181 |
+| Phase 2 | ~$187–207 |
 | Phase 3 | ~$66–96 |
 | Phase 4 | ~$104 |
-| **Grand total** | **~$331–381** |
+| **Grand total** | **~$357–407** |
 
 *Excludes panda cost (already purchased) and any 3D printer access costs.*
 
