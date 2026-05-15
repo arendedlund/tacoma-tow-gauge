@@ -8,7 +8,7 @@ User=root
 WorkingDirectory=/opt/gauge
 Environment=SDL_FBDEV=/dev/fb0
 Environment=SDL_VIDEODRIVER=fbcon
-ExecStart=/opt/gauge-env/bin/python3 /opt/gauge/src/main.py \
+ExecStart=/opt/gauge-env/bin/python3 /opt/gauge/run.py \
     --config /opt/gauge/config \
     --bus-interface socketcan
 Restart=on-failure
