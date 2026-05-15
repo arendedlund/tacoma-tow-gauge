@@ -1,21 +1,21 @@
 [
   {
-    "name": "oil_temp",
-    "label": "OIL TEMP",
+    "name": "coolant_temp",
+    "label": "ECT",
     "unit": "°C",
-    "status": "pending-OQ-1",
-    "request_header": "0x7E0",
-    "response_header": "0x7E8",
-    "obd_mode": "0x22",
-    "obd_pid": "0x0000",
+    "source": "broadcast",
+    "frame_id": "0x3C1",
     "decode": {
-      "formula": "0",
-      "variables": {}
+      "formula": "(A * 256 + B) * 0.625",
+      "variables": {
+        "A": { "byte_index": 0, "byte_count": 1 },
+        "B": { "byte_index": 1, "byte_count": 1 }
+      }
     },
     "plausible_min": -40.0,
-    "plausible_max": 200.0,
-    "warning_threshold": 135.0,
-    "critical_threshold": 150.0,
+    "plausible_max": 130.0,
+    "warning_threshold": 110.0,
+    "critical_threshold": 120.0,
     "staleness_timeout_s": 10.0
   },
   {

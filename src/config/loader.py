@@ -4,15 +4,21 @@ import json
 import os
 from typing import Any
 
-from src.signals.decoder import GaugeSignal, SignalDecoder, make_decoder_from_config
+from src.signals.decoder import (
+    BroadcastDecoder,
+    GaugeSignal,
+    SignalDecoder,
+    make_broadcast_decoder_from_config,
+    make_decoder_from_config,
+)
 
 
-def load_config(config_dir: str) -> tuple[dict[str, GaugeSignal], list[SignalDecoder]]:
+def load_config(
+    config_dir: str,
+) -> tuple[dict[str, GaugeSignal], list[SignalDecoder], list[BroadcastDecoder]]:
     """Load signals.json and thresholds.json; return instantiated signals and decoders.
 
-    Signals with status "pending-OQ-1" get a GaugeSignal (stays WAITING) but no decoder
-    — no request will be sent for them until Phase 1 resolves the open question.
-
+    Signals with source "broadcast" get a BroadcastDecoder (passive listen, no request).
     Thresholds from thresholds.json override values in signals.json per-signal.
     """
     signals_path = os.path.join(config_dir, "signals.json")
@@ -27,6 +33,7 @@ def load_config(config_dir: str) -> tuple[dict[str, GaugeSignal], list[SignalDec
 
     signals: dict[str, GaugeSignal] = {}
     decoders: list[SignalDecoder] = []
+    broadcast_decoders: list[BroadcastDecoder] = []
 
     for entry in signals_raw:
         name = entry["name"]
@@ -44,9 +51,9 @@ def load_config(config_dir: str) -> tuple[dict[str, GaugeSignal], list[SignalDec
         )
         signals[name] = signal
 
-        if entry.get("status") == "pending-OQ-1":
-            continue
+        if entry.get("source") == "broadcast":
+            broadcast_decoders.append(make_broadcast_decoder_from_config(entry))
+        else:
+            decoders.append(make_decoder_from_config(entry))
 
-        decoders.append(make_decoder_from_config(entry))
-
-    return signals, decoders
+    return signals, decoders, broadcast_decoders

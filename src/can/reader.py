@@ -4,7 +4,7 @@ import threading
 import time
 from typing import Optional
 
-from src.signals.decoder import GaugeSignal, SignalDecoder
+from src.signals.decoder import BroadcastDecoder, GaugeSignal, SignalDecoder
 
 _POLL_INTERVAL_S = 1.0       # seconds between OBD-II request cycles
 _STALE_TICK_INTERVAL_S = 0.5 # seconds between staleness ticks
@@ -26,11 +26,13 @@ class CANReader:
         self,
         signals: dict[str, GaugeSignal],
         decoders: list[SignalDecoder],
+        broadcast_decoders: list[BroadcastDecoder] | None = None,
         bus_interface: str = "virtual",
         channel: str = "test",
     ) -> None:
         self.signals = signals
         self.decoders = decoders
+        self.broadcast_decoders = broadcast_decoders or []
         self.bus_interface = bus_interface
         self.channel = channel
         self._running = False
@@ -132,6 +134,15 @@ class CANReader:
     def _dispatch(self, arb_id: int, data: bytes) -> None:
         for decoder in self.decoders:
             if decoder.matches(arb_id, data):
+                try:
+                    value = decoder.decode(data)
+                    signal = self.signals.get(decoder.signal_name)
+                    if signal is not None:
+                        signal.on_receive_frame(value)
+                except Exception:
+                    pass
+        for decoder in self.broadcast_decoders:
+            if decoder.matches(arb_id):
                 try:
                     value = decoder.decode(data)
                     signal = self.signals.get(decoder.signal_name)

@@ -39,11 +39,12 @@ def main() -> None:
     from src.config.loader import load_config
     from src.display.renderer import Renderer
 
-    signals, decoders = load_config(args.config)
+    signals, decoders, broadcast_decoders = load_config(args.config)
 
     reader = CANReader(
         signals=signals,
         decoders=decoders,
+        broadcast_decoders=broadcast_decoders,
         bus_interface=args.bus_interface,
         channel=args.channel,
     )

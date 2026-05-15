@@ -1,8 +1,8 @@
 [
   {
-    "signal_name": "oil_temp",
-    "warning_celsius": 135.0,
-    "critical_celsius": 150.0,
+    "signal_name": "coolant_temp",
+    "warning_celsius": 110.0,
+    "critical_celsius": 120.0,
     "staleness_timeout_s": 10.0
   },
   {

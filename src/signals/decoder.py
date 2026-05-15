@@ -128,3 +128,29 @@ def make_decoder_from_config(entry: dict) -> SignalDecoder:
         obd_pid=int(entry["obd_pid"], 16),
         decode_fn=decode_fn,
     )
+
+
+@dataclass
+class BroadcastDecoder:
+    """Decodes a passively-received broadcast CAN frame (no request/response cycle)."""
+
+    signal_name: str
+    frame_id: int
+    decode_fn: Callable[[bytes], float]
+
+    def matches(self, arbitration_id: int) -> bool:
+        return arbitration_id == self.frame_id
+
+    def decode(self, data: bytes) -> float:
+        return self.decode_fn(data)
+
+
+def make_broadcast_decoder_from_config(entry: dict) -> BroadcastDecoder:
+    """Construct a BroadcastDecoder from a signals.json broadcast entry."""
+    decode_cfg = entry["decode"]
+    decode_fn = _make_formula_decoder(decode_cfg["formula"], decode_cfg["variables"])
+    return BroadcastDecoder(
+        signal_name=entry["name"],
+        frame_id=int(entry["frame_id"], 16),
+        decode_fn=decode_fn,
+    )
