@@ -11,18 +11,22 @@ _BITTYPIX  = os.path.join(_FONTS_DIR, "Bittypix Monospace.otf")
 from src.signals.decoder import GaugeSignal, SignalState
 
 # Color palette — all RGB tuples
-_BG_NORMAL   = ( 18,  18,  18)
-_BG_WARNING  = ( 90,  55,   0)  # dark amber — clearly distinct from normal
-_BG_CRITICAL = (110,   0,   0)  # dark red  — clearly distinct from normal
-_BG_MUTED    = ( 18,  18,  18)
+# Normal: white-on-black for maximum contrast in all light conditions.
+# Warning/critical: solid fills so state is readable from peripheral vision,
+# not just from reading the number. SAE amber and pure red are universal.
+_BG_NORMAL   = (  0,   0,   0)
+_BG_WARNING  = (255, 160,   0)  # SAE amber — universally "attention"
+_BG_CRITICAL = (210,   0,   0)  # pure red  — universally "danger"
+_BG_MUTED    = (  0,   0,   0)
 
-_TEXT_LABEL    = (120, 120, 120)
-_TEXT_NORMAL   = (220, 220, 220)
-_TEXT_WARNING  = (255, 180,   0)  # bright amber
-_TEXT_CRITICAL = (255,  60,  60)  # bright red
-_TEXT_MUTED    = ( 70,  70,  70)
+_TEXT_LABEL_NORMAL   = (140, 140, 140)
+_TEXT_LABEL_INVERTED = (  0,   0,   0)  # black label on colored bg
+_TEXT_NORMAL         = (255, 255, 255)  # pure white on black
+_TEXT_INVERTED       = (  0,   0,   0)  # black on amber (warning)
+_TEXT_CRITICAL       = (255, 255, 255)  # white on red (critical)
+_TEXT_MUTED          = ( 50,  50,  50)
 
-_DIVIDER = (40, 40, 40)
+_DIVIDER = (30, 30, 30)
 
 # Font sizes (pixels) — chosen for readability at 280 px tall
 _FONT_LABEL = 24
@@ -68,18 +72,18 @@ class DisplaySlot:
 
         # Choose background and text colors from state
         if state == SignalState.WARNING:
-            bg, text_color = _BG_WARNING, _TEXT_WARNING
+            bg, text_color, label_color = _BG_WARNING, _TEXT_INVERTED, _TEXT_LABEL_INVERTED
         elif state == SignalState.CRITICAL:
-            bg, text_color = _BG_CRITICAL, _TEXT_CRITICAL
+            bg, text_color, label_color = _BG_CRITICAL, _TEXT_CRITICAL, _TEXT_CRITICAL
         elif state in (SignalState.WAITING, SignalState.NO_SIGNAL, SignalState.FAULT):
-            bg, text_color = _BG_MUTED, _TEXT_MUTED
+            bg, text_color, label_color = _BG_MUTED, _TEXT_MUTED, _TEXT_MUTED
         else:  # NORMAL
-            bg, text_color = _BG_NORMAL, _TEXT_NORMAL
+            bg, text_color, label_color = _BG_NORMAL, _TEXT_NORMAL, _TEXT_LABEL_NORMAL
 
         cx = self.rect.centerx
 
         # Label row — pinned near the top
-        label_surf = self._label_font.render(self.signal.label, True, _TEXT_LABEL)
+        label_surf = self._label_font.render(self.signal.label, True, label_color)
         label_rect = label_surf.get_rect(centerx=cx, top=self.rect.top + _PAD_TOP)
 
         # Value area — everything below the label down to the bottom padding

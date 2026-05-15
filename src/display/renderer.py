@@ -10,7 +10,7 @@ from src.signals.decoder import GaugeSignal
 _WIDTH  = 1424
 _HEIGHT = 280
 _FPS    = 30
-_BG     = (18, 18, 18)
+_BG     = (0, 0, 0)
 
 # Three equal vertical bands per display-contract.md
 _SLOT_RECTS = [

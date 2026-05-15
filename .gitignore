@@ -13,3 +13,5 @@ venv/
 dist/
 *.egg-info/
 .eggs/
+# Assests
+assets/
